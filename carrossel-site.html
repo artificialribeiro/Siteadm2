@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Boutique Diniz - Gerenciar Banners</title>
+    
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "brand-black": "#000000", "brand-dark": "#0a0a0a", "brand-gray": "#121212" },
+                    fontFamily: { "sans": ["'Montserrat'", "sans-serif"] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-dark { background: transparent; border: 0; border-bottom: 1px solid #333; color: white; transition: all 0.3s; padding: 10px 0; font-size: 14px; width: 100%; }
+        .input-dark:focus { outline: none; border-bottom-color: #fff; }
+        select.input-dark option { background-color: #0a0a0a; color: white; }
+        .banner-preview { aspect-ratio: 16 / 6; object-fit: cover; width: 100%; border-radius: 2px; }
+    </style>
+    
+    <script src="token.js?v=banners"></script>
+    <script src="seguranca.js?v=banners" defer></script>
+    <script src="menu.js?v=banners" defer></script>
+    <script src="banners.js?v=banners" defer></script>
+</head>
+<body class="bg-brand-black text-white font-sans h-screen w-full overflow-hidden flex selection:bg-white selection:text-black">
+    
+    <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/10 via-brand-black to-brand-black z-0"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        <header class="h-24 bg-brand-dark/70 backdrop-blur-lg border-b border-gray-900/50 flex items-center justify-between px-4 sm:px-8 shrink-0">
+            <button id="btn-open-menu" class="md:hidden text-white"><span class="material-icons text-3xl">menu_open</span></button>
+            <div class="hidden md:flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-gray-500">
+                <span class="material-icons text-sm">home</span> <span>/</span> <span>Site</span> <span>/</span> <span class="text-white font-bold">Banners Carrossel</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="topbar-user-name" class="text-sm font-medium">Carregando...</p>
+                    <p id="topbar-user-role" class="text-[10px] text-gray-500 uppercase">Administrador</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center text-black text-lg font-bold">
+                    <span id="topbar-user-initial"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
+                    <div>
+                        <h3 class="text-2xl sm:text-3xl font-light tracking-wide">Banners do Site</h3>
+                        <p class="text-xs text-gray-500 mt-1 font-light">Gerencie o carrossel principal da sua loja online.</p>
+                    </div>
+                    <button id="btn-novo-banner" class="px-6 py-3 bg-white text-black text-xs uppercase tracking-widest font-bold hover:bg-gray-200 transition-all flex items-center gap-2 rounded-sm shadow-lg">
+                        <span class="material-icons text-sm">add_photo_alternate</span> Novo Banner
+                    </button>
+                </div>
+
+                <div id="grid-banners" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="col-span-full py-20 text-center text-gray-500 animate-pulse uppercase tracking-widest text-[10px]">
+                        Conectando ao servidor...
+                    </div>
+                </div>
+
+            </div>
+            <div class="h-16"></div>
+        </div>
+    </main>
+
+    <div id="modal-banner" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] hidden items-center justify-center p-4 transition-all opacity-0">
+        <div class="bg-brand-gray border border-gray-800 w-full max-w-2xl rounded-sm shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center shrink-0">
+                <h2 id="modal-titulo" class="text-lg font-light tracking-widest uppercase text-white">Configurar Banner</h2>
+                <button id="btn-fechar-modal" class="text-gray-500 hover:text-white transition-colors"><span class="material-icons">close</span></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <form id="form-banner" class="space-y-6">
+                    <input type="hidden" id="banner-id">
+                    
+                    <div id="container-upload" class="border-2 border-dashed border-gray-700 bg-black/20 rounded-sm p-8 text-center hover:border-white transition-colors relative group">
+                        <input type="file" id="banner-arquivo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <div id="preview-upload" class="hidden absolute inset-0 bg-brand-black">
+                            <img id="img-render" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <p class="text-[10px] uppercase font-bold text-white">Trocar Imagem</p>
+                            </div>
+                        </div>
+                        <div class="pointer-events-none flex flex-col items-center justify-center space-y-2">
+                            <span class="material-icons text-4xl text-gray-600">image</span>
+                            <p class="text-xs font-medium text-white">Clique para selecionar a imagem</p>
+                            <p class="text-[9px] text-gray-500 uppercase tracking-widest">Recomendado: 1920x600px (JPG/PNG)</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Título Interno</label>
+                            <input type="text" id="banner-titulo" class="input-dark" placeholder="Ex: Coleção Verão 2026">
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Link de Destino (URL)</label>
+                            <input type="text" id="banner-link" class="input-dark" placeholder="https://boutiquediniz.com/vestidos">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Ordem de Exibição</label>
+                            <input type="number" id="banner-ordem" class="input-dark" value="0">
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Status</label>
+                            <select id="banner-ativo" class="input-dark">
+                                <option value="true">Ativo (Exibir no site)</option>
+                                <option value="false">Inativo (Ocultar)</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-6 border-t border-gray-800 flex justify-end gap-4 shrink-0 bg-black/50">
+                <button id="btn-cancelar" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white px-4">Cancelar</button>
+                <button type="submit" form="form-banner" id="btn-salvar-banner" class="bg-white text-black px-10 py-4 text-xs uppercase font-bold tracking-widest hover:bg-gray-200 transition-all flex items-center gap-2">
+                    <span class="material-icons text-sm" id="icon-salvar">save</span> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded-sm shadow-2xl transform translate-y-20 opacity-0 transition-all z-[200] text-sm flex items-center gap-3">
+        <span class="material-icons text-black" id="toast-icon">check_circle</span>
+        <span id="toast-msg" class="font-medium"></span>
+    </div>
+
+</body>
+</html>

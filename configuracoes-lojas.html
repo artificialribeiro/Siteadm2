@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Boutique Diniz - Gerenciar Lojas</title>
+    
+    <link rel="icon" href="logo.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "brand-black": "#000000", "brand-dark": "#0a0a0a", "brand-gray": "#121212" },
+                    fontFamily: { "sans": ["'Montserrat'", "sans-serif"] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' },
+                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 4px; height: 4px;}
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #fff; }
+        .glass-panel { background: rgba(18, 18, 18, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-dark { background: transparent; border: 0; border-bottom: 1px solid #333; color: white; transition: all 0.3s; padding: 10px 0; font-size: 14px; width: 100%; }
+        .input-dark:focus { outline: none; border-bottom-color: #fff; box-shadow: none; }
+        .input-dark::placeholder { color: #555; }
+        select.input-dark option { background-color: #0a0a0a; color: white; }
+    </style>
+
+    <script src="token.js"></script> <script src="seguranca.js" defer></script>
+    <script src="menu.js" defer></script>
+    
+    <script src="configuracoes-lojas.js" defer></script>
+</head>
+<body class="bg-brand-black text-white font-sans h-screen w-full overflow-hidden flex selection:bg-white selection:text-black">
+    
+    <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/10 via-brand-black to-brand-black z-0"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        
+        <header class="h-24 bg-brand-dark/70 backdrop-blur-lg border-b border-gray-900/50 flex items-center justify-between px-8 shrink-0 z-20 sticky top-0">
+            <button id="btn-open-menu" class="md:hidden text-white hover:text-gray-300 focus:outline-none transition-colors">
+                <span class="material-icons text-3xl">menu_open</span>
+            </button>
+
+            <div class="hidden md:flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-gray-500">
+                <span class="material-icons text-sm">home</span> <span>/</span> 
+                <span>Configurações</span> <span>/</span> 
+                <span class="text-white">Lojas e Filiais</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="topbar-user-name" class="text-sm font-medium text-white">Carregando...</p>
+                    <p id="topbar-user-role" class="text-[10px] text-gray-500 uppercase tracking-widest">Acesso</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-gray-900 border border-gray-700 flex items-center justify-center text-white font-light text-xl shadow-lg">
+                    <span id="topbar-user-initial"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth relative z-10">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 opacity-0 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div>
+                        <h3 class="text-3xl font-light tracking-wide text-white">Gerenciar Filiais</h3>
+                        <p class="text-sm text-gray-500 mt-2 font-light tracking-wide">Cadastre e configure as lojas e pontos da Boutique Diniz.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <select id="filtro-status" class="input-dark pr-8 cursor-pointer text-xs uppercase tracking-widest border-b border-gray-700">
+                                <option value="">Todas as Unidades</option>
+                                <option value="1">Apenas Ativas</option>
+                                <option value="0">Inativas</option>
+                            </select>
+                        </div>
+
+                        <button id="btn-nova-filial" class="px-6 py-3 bg-white text-black text-xs uppercase tracking-widest font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 rounded-sm">
+                            <span class="material-icons text-sm">add</span> Nova Filial
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl overflow-hidden opacity-0 animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-900/50 border-b border-gray-800 text-[10px] uppercase tracking-widest text-gray-400">
+                                    <th class="p-4 font-medium">Nome / Código</th>
+                                    <th class="p-4 font-medium">Tipo</th>
+                                    <th class="p-4 font-medium hidden md:table-cell">Localização</th>
+                                    <th class="p-4 font-medium">Status</th>
+                                    <th class="p-4 font-medium text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-filiais" class="text-sm font-light divide-y divide-gray-800/50">
+                                <tr><td colspan="5" class="p-8 text-center text-gray-500">Carregando filiais...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="h-16"></div>
+        </div>
+    </main>
+
+    <div id="modal-form" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 transition-opacity opacity-0">
+        <div class="bg-brand-gray border border-gray-800 w-full max-w-2xl rounded-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center shrink-0">
+                <h2 id="modal-titulo" class="text-xl font-light tracking-wide text-white">Nova Filial</h2>
+                <button id="btn-fechar-modal" class="text-gray-500 hover:text-white transition-colors"><span class="material-icons">close</span></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <form id="form-filial" class="space-y-6">
+                    <input type="hidden" id="filial-id">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Nome da Filial *</label>
+                            <input type="text" id="filial-nome" required class="input-dark" placeholder="Ex: Boutique Centro">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Tipo *</label>
+                            <select id="filial-tipo" required class="input-dark cursor-pointer">
+                                <option value="loja">Loja Física</option>
+                                <option value="site">E-commerce (Site)</option>
+                                <option value="deposito">Depósito / Estoque</option>
+                                <option value="escritorio">Escritório Administrativo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Código Interno</label>
+                            <input type="text" id="filial-codigo" class="input-dark" placeholder="Ex: LOJA-01">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Status</label>
+                            <select id="filial-ativo" class="input-dark cursor-pointer">
+                                <option value="true">Unidade Ativa</option>
+                                <option value="false">Unidade Inativa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Telefone</label>
+                            <input type="text" id="filial-telefone" class="input-dark" placeholder="(11) 9999-9999">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">E-mail</label>
+                            <input type="email" id="filial-email" class="input-dark" placeholder="contato@boutiquediniz.com">
+                        </div>
+                    </div>
+
+                    <h4 class="text-xs uppercase tracking-widest text-gray-400 border-b border-gray-800 pb-2 mt-8">Endereço e Horário</h4>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Logradouro / Rua</label>
+                            <input type="text" id="filial-rua" class="input-dark" placeholder="Ex: Av. Paulista, 1000">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">CEP</label>
+                            <input type="text" id="filial-cep" class="input-dark" placeholder="00000-000">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2">
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Cidade</label>
+                            <input type="text" id="filial-cidade" class="input-dark" placeholder="Ex: São Paulo">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest text-gray-500">Estado (UF)</label>
+                            <input type="text" id="filial-estado" class="input-dark" placeholder="Ex: SP" maxlength="2">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-gray-500">Horário de Funcionamento</label>
+                        <input type="text" id="filial-horario" class="input-dark" placeholder="Ex: Seg-Sex 09h às 18h | Sáb 09h às 13h">
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-6 border-t border-gray-800 flex justify-end gap-4 shrink-0 bg-brand-black/50">
+                <button id="btn-cancelar-modal" class="px-6 py-3 border border-gray-700 text-gray-400 text-xs uppercase tracking-widest hover:text-white hover:border-white transition-colors">Cancelar</button>
+                <button id="btn-salvar-filial" class="px-6 py-3 bg-white text-black text-xs uppercase tracking-widest font-medium hover:bg-gray-200 transition-colors flex items-center gap-2">
+                    <span class="material-icons text-sm" id="icon-salvar">save</span> Salvar Filial
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-delete" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] hidden items-center justify-center p-4 transition-opacity opacity-0">
+        <div class="bg-brand-gray border border-red-900/50 w-full max-w-sm rounded-sm shadow-2xl p-6 text-center">
+            <span class="material-icons text-5xl text-red-500 mb-4">warning</span>
+            <h2 class="text-xl font-light text-white mb-2">Desativar Filial?</h2>
+            <p class="text-sm text-gray-400 mb-6 font-light">A unidade será marcada como inativa e não aparecerá nos caixas, mas o histórico será mantido.</p>
+            <input type="hidden" id="delete-id">
+            
+            <div class="flex justify-center gap-4">
+                <button id="btn-cancelar-delete" class="px-6 py-3 border border-gray-700 text-gray-400 text-xs uppercase tracking-widest hover:text-white hover:border-white transition-colors">Cancelar</button>
+                <button id="btn-confirmar-delete" class="px-6 py-3 bg-red-600 text-white text-xs uppercase tracking-widest font-medium hover:bg-red-500 transition-colors">Desativar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded-sm shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-[200] flex items-center gap-3 font-medium text-sm">
+        <span class="material-icons text-green-600" id="toast-icon">check_circle</span>
+        <span id="toast-msg">Operação realizada com sucesso!</span>
+    </div>
+
+</body>
+</html>

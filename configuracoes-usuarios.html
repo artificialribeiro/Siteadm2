@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Boutique Diniz - Gestão de Equipe</title>
+    
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "brand-black": "#000000", "brand-dark": "#0a0a0a", "brand-gray": "#121212", "brand-gold": "#D4AF37" },
+                    fontFamily: { "sans": ["'Montserrat'", "sans-serif"] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-dark { background: transparent; border: 0; border-bottom: 1px solid #333; color: white; transition: all 0.3s; padding: 10px 0; font-size: 14px; width: 100%; }
+        .input-dark:focus { outline: none; border-bottom-color: #fff; }
+        select.input-dark option { background-color: #0a0a0a; color: white; }
+    </style>
+
+    <script src="token.js"></script>
+    <script src="seguranca.js" defer></script>
+    <script src="menu.js" defer></script>
+    <script src="configuracoes-usuarios.js" defer></script>
+</head>
+<body class="bg-brand-black text-white font-sans h-screen w-full overflow-hidden flex">
+    
+    <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/10 via-brand-black to-brand-black z-0"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        <header class="h-24 bg-brand-dark/70 backdrop-blur-lg border-b border-gray-900/50 flex items-center justify-between px-8 shrink-0">
+            <button id="btn-open-menu" class="md:hidden text-white"><span class="material-icons text-3xl">menu_open</span></button>
+            
+            <div class="hidden md:flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-gray-500">
+                <span class="material-icons text-sm">home</span> <span>/</span> 
+                <span>Configurações</span> <span>/</span> 
+                <span class="text-white">Usuários</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="topbar-user-name" class="text-sm font-medium">Carregando...</p>
+                    <p id="topbar-user-role" class="text-[10px] text-gray-500 uppercase tracking-widest">Acesso</p>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-gray-900 border border-gray-700 flex items-center justify-center text-white text-xl shadow-xl">
+                    <span id="topbar-user-initial"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-3xl font-light tracking-wide text-white">Equipe e Acessos</h3>
+                        <p class="text-sm text-gray-500 mt-2 font-light">Gerencie os colaboradores e suas permissões de sistema.</p>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button id="btn-abrir-grupos" class="px-6 py-3 border border-gray-800 text-gray-400 text-xs uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2">
+                            <span class="material-icons text-sm">shield</span> Grupos de Acesso
+                        </button>
+                        <button id="btn-novo-usuario" class="px-6 py-3 bg-white text-black text-xs uppercase tracking-widest font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 shadow-lg">
+                            <span class="material-icons text-sm">person_add</span> Novo Usuário
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl overflow-hidden flex flex-col">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-900/50 border-b border-gray-800 text-[10px] uppercase tracking-widest text-gray-400">
+                                    <th class="p-4 pl-6">Nome / Login</th>
+                                    <th class="p-4">Grupo</th>
+                                    <th class="p-4">Filial</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-right pr-6">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-usuarios" class="text-sm font-light divide-y divide-gray-800/50">
+                                <tr><td colspan="5" class="p-8 text-center text-gray-500">Conectando ao banco de dados...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-usuario" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] hidden items-center justify-center p-4 transition-all opacity-0">
+        <div class="bg-brand-gray border border-gray-800 w-full max-w-xl rounded-sm shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h2 id="modal-usuario-titulo" class="text-xl font-light tracking-wide text-white">Novo Usuário</h2>
+                <button id="btn-fechar-usuario" class="text-gray-500 hover:text-white"><span class="material-icons">close</span></button>
+            </div>
+            
+            <form id="form-usuario" class="p-6 space-y-6">
+                <input type="hidden" id="usuario-id">
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1 block">Nome Completo</label>
+                        <input type="text" id="usuario-nome" required class="input-dark" placeholder="Ex: Ana Silva">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1 block">Login de Acesso</label>
+                        <input type="text" id="usuario-login" required class="input-dark" placeholder="ana.silva">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1 block">Senha</label>
+                        <input type="password" id="usuario-senha" class="input-dark" placeholder="••••••••">
+                        <p id="aviso-senha" class="text-[8px] text-gray-500 mt-2 italic hidden text-brand-gold">Deixe em branco para não alterar a senha atual.</p>
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1 block">Status</label>
+                        <select id="usuario-ativo" class="input-dark">
+                            <option value="true">Conta Ativa</option>
+                            <option value="false">Bloqueado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1 block">Grupo de Acesso</label>
+                        <select id="select-grupo-id" required class="input-dark">
+                            <option value="">Carregando grupos...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase tracking-[0.2em] text-gray-500 mb-1 block">Alocação</label>
+                        <select id="select-filial-id" class="input-dark">
+                            <option value="">Sem filial (Geral)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="btn-cancelar-usuario" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white">Cancelar</button>
+                    <button type="submit" class="bg-white text-black px-10 py-3 text-xs uppercase font-bold tracking-widest hover:bg-gray-200 transition-all">
+                        Salvar Usuário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded-sm shadow-2xl transform translate-y-20 opacity-0 transition-all z-[200] text-sm flex items-center gap-3">
+        <span class="material-icons text-green-600" id="toast-icon">check_circle</span>
+        <span id="toast-msg"></span>
+    </div>
+
+</body>
+</html>

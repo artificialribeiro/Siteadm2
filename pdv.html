@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PDV - Boutique Diniz</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { 'brand-black': '#000000', 'brand-dark': '#0A0A0A', 'brand-gray': '#141414', 'brand-border': '#27272A', 'gold': '#D4AF37' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Roboto Mono', 'monospace'] },
+                    animation: { 'cart-bounce': 'cartBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)' },
+                    keyframes: { cartBounce: { '0%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.2)' }, '100%': { transform: 'scale(1)' } } }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #FFFFFF; overflow: hidden; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .input-dark { width: 100%; background: #0A0A0A; border: 1px solid #27272A; color: white; padding: 0.875rem 1rem; border-radius: 0.75rem; outline: none; transition: all 0.3s ease; }
+        .input-dark:focus { border-color: #FFFFFF; background: #000000; }
+        #painel-carrinho { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+        .cart-open { transform: translateX(0) !important; }
+        
+        @media print {
+            @page { margin: 0; size: 80mm auto; }
+            html, body { height: auto !important; overflow: visible !important; background: white !important; }
+            body * { visibility: hidden; }
+            main, header, aside, section { display: none !important; }
+            #modal-recibo, #modal-recibo * { visibility: visible; color: black !important; }
+            #modal-recibo { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; background: white !important; border: none !important; }
+            #area-impressao-cupom { width: 100%; max-width: 80mm; margin: 0 auto; padding: 2mm 4mm; font-family: 'Roboto Mono', monospace !important; }
+        }
+    </style>
+</head>
+<body class="flex h-screen w-screen selection:bg-white selection:text-black relative">
+
+    <div id="error-console" class="fixed top-0 left-0 w-full z-[999] bg-red-600 text-white px-4 py-2 text-xs font-mono hidden flex justify-between items-center shadow-xl">
+        <div class="flex items-center gap-2">
+            <span class="material-icons-outlined text-sm">report_problem</span>
+            <span id="error-message">Erro detectado na API...</span>
+        </div>
+        <button onclick="document.getElementById('error-console').classList.add('hidden')" class="hover:bg-red-700 px-2 py-1 rounded">FECHAR</button>
+    </div>
+
+    <main class="flex-1 flex h-full overflow-hidden relative">
+        <section class="flex-1 flex flex-col h-full bg-brand-black w-full relative z-10">
+            <header class="h-16 shrink-0 border-b border-brand-border bg-brand-black flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button id="btn-open-menu" class="md:hidden text-gray-400 hover:text-white transition-colors"><span class="material-icons-outlined">menu</span></button>
+                    <div>
+                        <h1 class="font-bold tracking-[0.2em] uppercase text-xs text-white">Boutique Diniz</h1>
+                        <p class="text-[10px] text-gray-500 font-mono mt-0.5 flex items-center gap-1">
+                            <span id="status-caixa-badge" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            <span id="display-id-caixa" class="tracking-wider">--</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex flex-1 max-w-xl mx-8 relative group">
+                    <span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-white transition-colors">search</span>
+                    <input type="text" id="input-busca-pdv" class="input-dark pl-12 rounded-full bg-brand-dark border-gray-800" placeholder="Buscar por Nome ou Bipar Código..." autofocus autocomplete="off">
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="hidden lg:flex gap-3">
+                        <button id="btn-abrir-devolucao" class="text-xs text-gray-400 hover:text-white font-medium transition-colors">Trocas</button>
+                        <button id="btn-abrir-lancamento" class="text-xs text-gray-400 hover:text-white font-medium transition-colors">Caixa</button>
+                        <button id="btn-abrir-modal-fechar" class="px-4 py-1.5 bg-white text-black hover:bg-gray-200 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors">Fechar Caixa</button>
+                    </div>
+                    <div class="text-right hidden sm:block border-l border-brand-border pl-4">
+                        <p id="topbar-user-name" class="text-xs font-semibold text-white tracking-wide">---</p>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest">Atendente</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8">
+                <div id="container-produtos" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 pb-24 lg:pb-0">
+                    <div class="col-span-full h-64 flex flex-col items-center justify-center text-gray-500">
+                        <span class="material-icons-outlined animate-spin text-4xl mb-4 text-white">sync</span>
+                        <p class="text-[10px] uppercase tracking-[0.2em] font-bold">Carregando PDV...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside id="painel-carrinho" class="fixed inset-y-0 right-0 z-40 w-full sm:w-[400px] lg:static lg:w-[420px] bg-brand-dark border-l border-brand-border flex flex-col shadow-2xl transform translate-x-full lg:translate-x-0">
+            <div class="p-6 border-b border-brand-border flex items-center justify-between bg-brand-black shrink-0">
+                <h2 class="font-bold uppercase tracking-[0.15em] text-white text-sm flex items-center gap-3">
+                    <span class="material-icons-outlined">local_mall</span> Sacola
+                </h2>
+                <div class="flex items-center gap-4">
+                    <button id="btn-limpar-carrinho" class="text-[10px] text-gray-500 hover:text-white uppercase tracking-wider font-semibold transition-colors">Limpar</button>
+                    <button id="btn-close-cart" class="lg:hidden w-8 h-8 flex items-center justify-center bg-brand-border rounded-full text-white"><span class="material-icons-outlined text-sm">close</span></button>
+                </div>
+            </div>
+
+            <div class="p-4 border-b border-brand-border shrink-0">
+                <button id="btn-abrir-busca-cliente" class="w-full py-3 px-4 bg-brand-gray border border-brand-border rounded-xl text-xs font-medium text-gray-400 hover:text-white hover:border-gray-500 transition-all flex items-center justify-between group">
+                    <span class="flex items-center gap-2"><span class="material-icons-outlined text-sm">person_add</span> Identificar Cliente</span>
+                    <span class="material-icons-outlined text-sm opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                </button>
+                <div id="box-cliente-identificado" class="hidden items-center justify-between bg-white text-black p-3.5 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center"><span class="material-icons-outlined text-white text-sm">person</span></div>
+                        <div class="overflow-hidden">
+                            <p id="txt-nome-cliente" class="text-sm font-bold truncate">---</p>
+                            <p class="text-[9px] uppercase tracking-widest text-gray-500 font-semibold mt-0.5">Cliente Vinculado</p>
+                        </div>
+                    </div>
+                    <button id="btn-remover-cliente" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors"><span class="material-icons-outlined text-sm">close</span></button>
+                </div>
+            </div>
+
+            <div id="lista-carrinho" class="flex-1 overflow-y-auto p-4 space-y-3 bg-brand-black"></div>
+
+            <div class="p-6 bg-brand-dark border-t border-brand-border shrink-0">
+                <div class="flex gap-3 mb-5">
+                    <div class="flex-1">
+                        <label class="text-[9px] text-gray-500 font-bold uppercase tracking-widest block mb-1">Desconto R$</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">R$</span>
+                            <input type="number" step="0.01" min="0" id="input-desconto" class="input-dark pl-10 text-sm font-mono border-gray-700" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-end">
+                        <button id="btn-add-cartao" class="w-full h-[46px] bg-brand-gray border border-brand-border hover:bg-white hover:text-black text-white text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2">
+                            <span class="material-icons-outlined text-[14px]">redeem</span> Gift Card
+                        </button>
+                        <div id="btn-remover-cartao" class="w-full h-[46px] bg-brand-gray border border-brand-border rounded-xl flex items-center justify-between px-3 hidden">
+                            <span class="text-[10px] font-bold text-white uppercase tracking-wider">Gift Card</span>
+                            <div class="flex items-center gap-2">
+                                <span id="txt-valor-cartao" class="text-[9px] font-mono text-gray-300 text-right leading-tight tracking-tighter"></span>
+                                <button class="hover:text-red-500 text-gray-500 transition-colors" id="btn-remover-cartao-icone"><span class="material-icons-outlined text-sm">cancel</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-widest">Subtotal</span>
+                    <span id="subtotal-carrinho" class="text-xs font-mono text-gray-400">R$ 0,00</span>
+                </div>
+                <div class="flex justify-between items-end mb-6">
+                    <span class="text-sm font-bold text-white uppercase tracking-[0.1em]">A Pagar</span>
+                    <span id="total-carrinho" class="text-3xl font-mono text-white font-light tracking-tighter">R$ 0,00</span>
+                </div>
+
+                <div id="grid-pagamentos" class="grid grid-cols-4 gap-2">
+                    <button class="btn-metodo-pgto bg-brand-gray border border-brand-border hover:bg-white hover:text-black text-white p-3 rounded-xl flex flex-col items-center justify-center gap-2 disabled:opacity-30 transition-all" data-tipo="dinheiro" data-label="Dinheiro">
+                        <span class="material-icons-outlined">payments</span><span class="text-[8px] font-bold uppercase tracking-wider">Dinheiro</span>
+                    </button>
+                    <button class="btn-metodo-pgto bg-brand-gray border border-brand-border hover:bg-white hover:text-black text-white p-3 rounded-xl flex flex-col items-center justify-center gap-2 disabled:opacity-30 transition-all" data-tipo="cartao" data-label="Crédito">
+                        <span class="material-icons-outlined">credit_score</span><span class="text-[8px] font-bold uppercase tracking-wider">Crédito</span>
+                    </button>
+                    <button class="btn-metodo-pgto bg-brand-gray border border-brand-border hover:bg-white hover:text-black text-white p-3 rounded-xl flex flex-col items-center justify-center gap-2 disabled:opacity-30 transition-all" data-tipo="cartao" data-label="Débito">
+                        <span class="material-icons-outlined">credit_card</span><span class="text-[8px] font-bold uppercase tracking-wider">Débito</span>
+                    </button>
+                    <button class="btn-metodo-pgto bg-brand-gray border border-brand-border hover:bg-white hover:text-black text-white p-3 rounded-xl flex flex-col items-center justify-center gap-2 disabled:opacity-30 transition-all" data-tipo="pix" data-label="PIX">
+                        <span class="material-icons-outlined">qr_code_scanner</span><span class="text-[8px] font-bold uppercase tracking-wider">PIX</span>
+                    </button>
+                </div>
+                
+                <div id="box-finalizar-zerado" class="hidden">
+                    <button id="btn-finalizar-zerado" class="w-full bg-white text-black py-4 rounded-xl font-bold uppercase tracking-[0.1em] text-xs hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                        <span class="material-icons-outlined">check_circle</span> Concluir Venda
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <div id="cart-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden lg:hidden"></div>
+
+        <button id="btn-toggle-cart" class="lg:hidden fixed bottom-6 right-6 w-16 h-16 bg-white text-black rounded-full shadow-2xl flex items-center justify-center z-20 hover:scale-105 transition-transform">
+            <span id="cart-icon" class="material-icons-outlined text-2xl">local_mall</span>
+            <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-600 text-white font-bold text-[10px] w-6 h-6 flex items-center justify-center rounded-full border-2 border-black hidden">0</span>
+        </button>
+    </main>
+
+    <div id="modal-abrir-caixa" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4"><div class="bg-brand-dark w-full max-w-sm rounded-2xl border border-brand-border overflow-hidden shadow-2xl p-8 text-center"><span class="material-icons-outlined text-5xl text-white mb-4">point_of_sale</span><h3 class="text-white font-bold uppercase tracking-[0.15em] text-sm mb-1">Abrir Caixa</h3><form id="form-abrir-caixa" class="space-y-4 text-left"><div><label class="text-[9px] uppercase text-gray-500 block mb-1.5 font-semibold tracking-widest">Troco Inicial</label><input type="number" id="c-valor-inicial" step="0.01" class="input-dark font-mono text-lg" placeholder="0.00" required></div><button type="submit" id="btn-confirmar-abertura" class="w-full py-4 bg-white text-black font-bold uppercase tracking-[0.1em] text-[10px] rounded-xl hover:bg-gray-200 transition-colors">Abrir Agora</button></form></div></div>
+    <div id="modal-selecionar-caixa" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4"><div class="bg-brand-dark w-full max-w-sm rounded-2xl border border-brand-border overflow-hidden shadow-2xl flex flex-col max-h-[80vh]"><div class="p-6 bg-brand-black border-b border-brand-border text-center text-white font-bold uppercase text-xs">Caixas Abertos</div><div id="lista-caixas-selecao" class="flex-1 overflow-y-auto p-4 space-y-2"></div></div></div>
+    <div id="modal-fechar-caixa" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4"><div class="bg-brand-dark w-full max-w-sm rounded-2xl border border-red-500/30 overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"><div class="p-6 bg-brand-black border-b border-brand-border text-center"><span class="material-icons-outlined text-red-500 text-3xl mb-2">lock</span><h3 class="text-white font-bold uppercase tracking-[0.1em] text-xs">Fechar Caixa <span id="fechar-caixa-id"></span></h3></div><div class="flex-1 overflow-y-auto p-6 text-left"><form id="form-fechar-caixa" class="space-y-4"><div><label class="text-[9px] uppercase text-gray-500 block mb-1.5 font-semibold tracking-widest">Valor na Gaveta</label><input type="number" id="fc-valor-declarado" step="0.01" class="input-dark text-lg" placeholder="0.00" required></div><button type="submit" id="btn-confirmar-fechar" class="w-full py-4 bg-white text-black font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-gray-200">Confirmar</button></form></div></div></div>
+
+    <div id="modal-recibo" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] hidden items-center justify-center p-4">
+        <div class="bg-brand-dark w-full max-w-sm rounded-2xl border border-brand-border overflow-hidden shadow-2xl flex flex-col max-h-[90vh] print:max-h-none print:w-full print:border-none print:rounded-none">
+            <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-black no-print"><h3 class="text-white font-bold uppercase tracking-[0.1em] text-xs">Nota Emitida</h3><button id="btn-fechar-recibo" class="text-gray-500 hover:text-white transition-colors"><span class="material-icons-outlined">close</span></button></div>
+            <div class="flex-1 overflow-y-auto p-6 bg-[#E5E5E5] flex justify-center print:bg-white print:p-0 print:overflow-visible"><div id="area-impressao-cupom" class="bg-white text-black p-5 shadow-sm print:shadow-none mx-auto print:w-full"></div></div>
+            <div class="p-5 border-t border-brand-border flex gap-3 bg-brand-black no-print"><button id="btn-pular-impressao" class="flex-1 py-3.5 bg-brand-gray border border-brand-border text-white font-bold text-[10px] uppercase rounded-xl">Fechar</button><button id="btn-imprimir-cupom" class="flex-1 py-3.5 bg-white text-black font-bold text-[10px] uppercase rounded-xl flex items-center justify-center gap-2"><span class="material-icons-outlined text-sm">print</span> Imprimir</button></div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transform transition-all duration-400 -translate-y-20 opacity-0 z-[999] font-medium text-xs uppercase tracking-widest"><span id="toast-icon" class="material-icons-outlined text-sm text-green-600">check_circle</span><span id="toast-msg">Mensagem</span></div>
+
+    <script src="token.js"></script> 
+    <script src="menu.js"></script>  
+    <script src="pdv.js"></script>   
+
+</body>
+</html>

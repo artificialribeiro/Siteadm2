@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Boutique Diniz - Controle de Estoque</title>
+    
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "brand-black": "#000000", "brand-dark": "#0a0a0a", "brand-gray": "#121212", "brand-gold": "#D4AF37" },
+                    fontFamily: { "sans": ["'Montserrat'", "sans-serif"] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-dark { background: transparent; border: 0; border-bottom: 1px solid #333; color: white; transition: all 0.3s; padding: 10px 0; font-size: 14px; width: 100%; }
+        .input-dark:focus { outline: none; border-bottom-color: #fff; }
+        select.input-dark option { background-color: #0a0a0a; color: white; }
+    </style>
+    
+    <script src="token.js?v=estoque"></script>
+    <script src="seguranca.js?v=estoque" defer></script>
+    <script src="menu.js?v=estoque" defer></script>
+    <script src="estoque.js?v=estoque" defer></script>
+</head>
+<body class="bg-brand-black text-white font-sans h-screen w-full overflow-hidden flex">
+    
+    <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/10 via-brand-black to-brand-black z-0"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        <header class="h-24 bg-brand-dark/70 backdrop-blur-lg border-b border-gray-900/50 flex items-center justify-between px-4 sm:px-8 shrink-0">
+            <button id="btn-open-menu" class="md:hidden text-white"><span class="material-icons text-3xl">menu_open</span></button>
+            <div class="hidden md:flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-gray-500">
+                <span class="material-icons text-sm">home</span> <span>/</span> <span>Gestão</span> <span>/</span> <span class="text-brand-gold font-bold">Estoque</span>
+            </div>
+            <div class="flex items-center gap-4 sm:gap-6">
+                <div class="flex items-center gap-4 pl-4 sm:pl-6">
+                    <div class="text-right hidden sm:block">
+                        <p id="topbar-user-name" class="text-sm font-medium">Carregando...</p>
+                        <p id="topbar-user-role" class="text-[10px] text-gray-500 uppercase tracking-widest">Acesso</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-gray-900 border border-brand-gold flex items-center justify-center text-brand-gold text-lg font-bold shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                        <span id="topbar-user-initial"></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8 scroll-smooth">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-up">
+                    <div>
+                        <h3 class="text-2xl sm:text-3xl font-light tracking-wide">Painel de Estoque</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-2 font-light">Visão global e movimentações de inventário.</p>
+                    </div>
+                    <button id="btn-novo-movimento" class="px-6 py-3 bg-brand-gold text-black text-xs uppercase tracking-widest font-bold hover:bg-yellow-500 transition-colors flex items-center gap-2 rounded-sm shadow-[0_0_15px_rgba(212,175,55,0.3)] w-full sm:w-auto justify-center">
+                        <span class="material-icons text-sm">swap_vert</span> Lançar Movimento
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="glass-panel p-6 rounded-sm border-l-2 border-l-gray-500">
+                        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Total em Estoque</p>
+                        <p class="text-3xl font-light text-white" id="resumo-total-itens">--</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-sm border-l-2 border-l-brand-gold relative overflow-hidden">
+                        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Alertas de Baixa</p>
+                        <p class="text-3xl font-bold text-brand-gold" id="resumo-alertas">--</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-sm border-l-2 border-l-green-500">
+                        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Entradas (Hoje)</p>
+                        <p class="text-3xl font-light text-green-400" id="resumo-entradas">--</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-sm border-l-2 border-l-red-500">
+                        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Saídas (Hoje)</p>
+                        <p class="text-3xl font-light text-red-400" id="resumo-saidas">--</p>
+                    </div>
+                </div>
+
+                <div id="box-alertas" class="hidden bg-red-950/30 border border-red-900/50 rounded-sm p-6 animate-fade-in-up">
+                    <h4 class="text-red-500 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <span class="material-icons text-sm">warning</span> Produtos Precisando de Reposição
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-[9px] uppercase tracking-widest text-red-400/70 border-b border-red-900/30">
+                                <tr><th class="pb-2 font-medium">Produto / Variante</th><th class="pb-2 font-medium">SKU</th><th class="pb-2 font-medium text-center">Atual</th><th class="pb-2 font-medium text-center">Mínimo</th></tr>
+                            </thead>
+                            <tbody id="tabela-alertas" class="divide-y divide-red-900/20 text-gray-300">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-sm overflow-hidden animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-black/40">
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400">Histórico de Movimentos</h4>
+                        <select id="filtro-tipo" class="bg-transparent border border-gray-700 text-gray-300 text-[10px] uppercase tracking-widest py-1 px-3 outline-none rounded-sm">
+                            <option value="">Todos os Tipos</option>
+                            <option value="entrada">Apenas Entradas</option>
+                            <option value="saida">Apenas Saídas</option>
+                            <option value="ajuste">Ajustes Manuais</option>
+                        </select>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-900/50 border-b border-gray-800 text-[9px] uppercase tracking-widest text-gray-500">
+                                    <th class="p-4 pl-6">Data / Hora</th>
+                                    <th class="p-4">Produto e Variante</th>
+                                    <th class="p-4 text-center">Tipo</th>
+                                    <th class="p-4 text-center">Quantidade</th>
+                                    <th class="p-4">Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-movimentos" class="text-sm font-light divide-y divide-gray-800/50">
+                                <tr><td colspan="5" class="p-12 text-center text-gray-500">Aguardando dados...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-gray-800 flex justify-between items-center text-[10px] uppercase tracking-widest text-gray-500 bg-black/20">
+                        <span id="info-paginacao">Página 1</span>
+                        <div class="flex gap-2">
+                            <button id="btn-prev" class="p-2 border border-gray-700 hover:text-white disabled:opacity-20"><span class="material-icons text-sm">chevron_left</span></button>
+                            <button id="btn-next" class="p-2 border border-gray-700 hover:text-white disabled:opacity-20"><span class="material-icons text-sm">chevron_right</span></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="h-16"></div>
+        </div>
+    </main>
+
+    <div id="modal-movimento" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] hidden items-center justify-center p-4 transition-all opacity-0">
+        <div class="bg-brand-gray border border-gray-700 w-full max-w-lg rounded-sm shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center shrink-0">
+                <h2 class="text-lg font-light tracking-widest uppercase text-brand-gold">Novo Movimento</h2>
+                <button id="btn-fechar-modal" class="text-gray-500 hover:text-white transition-colors"><span class="material-icons">close</span></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <form id="form-movimento" class="space-y-6">
+                    
+                    <div class="space-y-6 bg-black/30 p-4 border border-gray-800 rounded-sm">
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">1. Selecione o Produto *</label>
+                            <select id="m-produto" required class="input-dark text-sm">
+                                <option value="" disabled selected>Carregando catálogo...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">2. Selecione Tamanho e Cor *</label>
+                            <select id="m-variante" required class="input-dark text-sm" disabled>
+                                <option value="" disabled selected>Escolha um produto primeiro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Tipo de Movimento *</label>
+                            <select id="m-tipo" required class="input-dark">
+                                <option value="entrada" class="text-green-500">🟢 Entrada (Somar)</option>
+                                <option value="saida" class="text-red-500">🔴 Saída (Subtrair)</option>
+                                <option value="ajuste" class="text-blue-500">🔵 Ajuste (Substituir total)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Quantidade *</label>
+                            <input type="number" id="m-qtd" required class="input-dark" placeholder="Ex: 10" min="1">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Motivo / Observação</label>
+                        <input type="text" id="m-motivo" class="input-dark" placeholder="Ex: Compra de fornecedor, perda, contagem...">
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-6 border-t border-gray-800 flex justify-end gap-4 shrink-0 bg-black/50">
+                <button id="btn-cancelar" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white px-4">Cancelar</button>
+                <button type="submit" form="form-movimento" id="btn-salvar-m" class="bg-brand-gold text-black px-8 py-3 text-xs uppercase font-bold hover:bg-yellow-500 transition-colors flex items-center gap-2">
+                    <span class="material-icons text-sm" id="icon-salvar-m">check</span> Confirmar Baixa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded-sm shadow-2xl transform translate-y-20 opacity-0 transition-all z-[200] text-sm flex items-center gap-3">
+        <span class="material-icons text-green-600" id="toast-icon">check_circle</span>
+        <span id="toast-msg"></span>
+    </div>
+
+</body>
+</html>

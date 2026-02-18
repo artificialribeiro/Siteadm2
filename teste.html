@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Teste - Lançamentos</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0A0A0A; color: #FFFFFF; font-family: 'Courier New', Courier, monospace; }
+        pre { font-family: 'Courier New', Courier, monospace; }
+    </style>
+
+    <script src="token.js"></script> 
+</head>
+<body class="p-6 md:p-10">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-2 text-white">Debug de API: Lançamentos de Caixa</h1>
+        <p class="text-gray-500 mb-6 text-sm">Esta página ignora as telas do sistema e bate direto na rota <span class="text-blue-400">/api/caixa/lancamentos?pageSize=5000</span></p>
+
+        <div class="flex gap-4 mb-6">
+            <button id="btn-buscar" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded font-bold uppercase tracking-widest text-sm transition-colors shadow-lg">
+                Buscar Todos os Lançamentos
+            </button>
+            <button id="btn-limpar" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded font-bold uppercase tracking-widest text-sm transition-colors">
+                Limpar Tela
+            </button>
+        </div>
+
+        <div id="painel-status" class="mb-4 p-4 border border-gray-700 bg-gray-900 rounded text-yellow-400 text-sm hidden">
+            </div>
+
+        <div class="bg-black border border-gray-800 rounded shadow-2xl p-4 overflow-auto max-h-[600px]">
+            <h2 class="text-gray-400 text-xs uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Resposta Bruta (JSON)</h2>
+            <pre id="json-output" class="text-[13px] text-green-400 whitespace-pre-wrap word-wrap break-words leading-relaxed"></pre>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnBuscar = document.getElementById('btn-buscar');
+            const btnLimpar = document.getElementById('btn-limpar');
+            const painelStatus = document.getElementById('painel-status');
+            const jsonOutput = document.getElementById('json-output');
+
+            function logStatus(msg, color = 'text-yellow-400') {
+                painelStatus.classList.remove('hidden');
+                painelStatus.className = `mb-4 p-4 border border-gray-700 bg-gray-900 rounded text-sm ${color}`;
+                painelStatus.innerHTML = `<strong>Status:</strong> ${msg}`;
+            }
+
+            btnLimpar.addEventListener('click', () => {
+                jsonOutput.textContent = '';
+                painelStatus.classList.add('hidden');
+            });
+
+            btnBuscar.addEventListener('click', async () => {
+                logStatus("Aguardando inicialização do AuthManager...", "text-yellow-400");
+                jsonOutput.textContent = "";
+
+                // Verifica se o token.js carregou corretamente
+                if (typeof window.authManager === 'undefined') {
+                    logStatus("ERRO CRÍTICO: token.js não está carregado ou falhou na inicialização.", "text-red-500");
+                    return;
+                }
+
+                try {
+                    logStatus("Gerando Headers de Autenticação...", "text-blue-400");
+                    const headers = await window.authManager.getAuthHeaders();
+                    
+                    // URL da rota de lançamentos
+                    const url = `${window.authManager.apiUrl}/api/caixa/lancamentos?pageSize=5000`;
+                    
+                    logStatus(`Disparando GET para: ${url}`, "text-blue-400");
+
+                    const res = await fetch(url, { headers: headers });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        const qtd = Array.isArray(data.data) ? data.data.length : (data.data.itens ? data.data.itens.length : 0);
+                        logStatus(`Sucesso! Encontrados ${qtd} lançamentos no banco. Veja o JSON abaixo.`, "text-green-500");
+                    } else {
+                        logStatus(`A API respondeu com erro: ${data.message}`, "text-red-500");
+                    }
+
+                    // Imprime o JSON formatado na tela com indentação de 4 espaços
+                    jsonOutput.textContent = JSON.stringify(data, null, 4);
+
+                } catch (err) {
+                    logStatus(`Erro de requisição / CORS / Falha de Rede: ${err.message}`, "text-red-500");
+                    console.error(err);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Boutique Diniz - Catálogo de Produtos</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "brand-black": "#000000", "brand-dark": "#0a0a0a", "brand-gray": "#121212", "brand-gold": "#D4AF37" },
+                    fontFamily: { "sans": ["'Montserrat'", "sans-serif"] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out forwards' }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-panel { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-dark { background: transparent; border: 0; border-bottom: 1px solid #333; color: white; transition: all 0.3s; padding: 10px 0; font-size: 14px; width: 100%; }
+        .input-dark:focus { outline: none; border-bottom-color: #fff; }
+        select.input-dark option { background-color: #0a0a0a; color: white; }
+        .tab-active { border-bottom: 2px solid white; color: white; }
+    </style>
+    
+    <script src="token.js?v=v6"></script>
+    <script src="seguranca.js?v=v6" defer></script>
+    <script src="menu.js?v=v6" defer></script>
+    <script src="produtos.js?v=v6" defer></script>
+</head>
+<body class="bg-brand-black text-white font-sans h-screen w-full overflow-hidden flex">
+    
+    <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/10 via-brand-black to-brand-black z-0"></div>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+        <header class="h-24 bg-brand-dark/70 backdrop-blur-lg border-b border-gray-900/50 flex items-center justify-between px-4 sm:px-8 shrink-0">
+            <button id="btn-open-menu" class="md:hidden text-white"><span class="material-icons text-3xl">menu_open</span></button>
+            <div class="hidden md:flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-gray-500">
+                <span class="material-icons text-sm">home</span> <span>/</span> <span>Gestão</span> <span>/</span> <span class="text-white font-bold">Produtos</span>
+            </div>
+            <div class="flex items-center gap-4 sm:gap-6">
+                <div class="flex items-center gap-4 border-l border-gray-800 pl-4 sm:pl-6">
+                    <div class="text-right hidden sm:block">
+                        <p id="topbar-user-name" class="text-sm font-medium text-white">Carregando...</p>
+                        <p id="topbar-user-role" class="text-[10px] text-gray-500 uppercase tracking-widest">Acesso</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center text-black text-lg font-bold">
+                        <span id="topbar-user-initial"></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+            <div class="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-fade-in-up">
+                    <div>
+                        <h3 class="text-2xl sm:text-3xl font-light tracking-wide">Produtos e Estoque</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-2 font-light">Controle o catálogo, categorias, preços e imagens.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative w-full sm:w-64">
+                            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">search</span>
+                            <input type="text" id="input-busca" class="bg-brand-dark border border-gray-800 rounded-sm py-3 pl-10 pr-4 text-xs w-full focus:border-white transition-all outline-none" placeholder="Busque por nome ou SKU...">
+                        </div>
+                        <button id="btn-novo-produto" class="px-6 py-3 bg-white text-black text-xs uppercase tracking-widest font-bold hover:bg-gray-200 transition-colors flex justify-center items-center gap-2 rounded-sm shadow-lg w-full sm:w-auto">
+                            <span class="material-icons text-sm">add</span> Novo Produto
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-sm overflow-hidden animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-900/50 border-b border-gray-800 text-[10px] uppercase tracking-widest text-gray-400">
+                                    <th class="p-4 pl-6">Produto</th>
+                                    <th class="p-4 text-center">SKU</th>
+                                    <th class="p-4">Preço (R$)</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-right pr-6">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-produtos" class="text-sm font-light divide-y divide-gray-800/50">
+                                <tr><td colspan="5" class="p-8 text-center text-gray-500">Iniciando sistema...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-gray-800 flex justify-between items-center text-[10px] uppercase tracking-widest text-gray-500 bg-black/20">
+                        <span id="info-paginacao">Página 1</span>
+                        <div class="flex gap-2">
+                            <button id="btn-prev" class="p-2 border border-gray-700 hover:text-white disabled:opacity-20"><span class="material-icons text-sm">chevron_left</span></button>
+                            <button id="btn-next" class="p-2 border border-gray-700 hover:text-white disabled:opacity-20"><span class="material-icons text-sm">chevron_right</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="h-16"></div>
+        </div>
+    </main>
+
+    <div id="modal-produto" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] hidden items-center justify-center p-2 sm:p-4 transition-all opacity-0">
+        <div class="bg-brand-gray border border-gray-800 w-full max-w-4xl rounded-sm shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+            <div class="p-4 sm:p-6 border-b border-gray-800 flex justify-between items-center shrink-0">
+                <h2 id="modal-titulo" class="text-lg sm:text-xl font-light tracking-wide truncate pr-4">Cadastrar Produto</h2>
+                <button id="btn-fechar-modal" class="text-gray-500 hover:text-white p-2 transition-colors"><span class="material-icons">close</span></button>
+            </div>
+            
+            <div class="flex px-2 sm:px-6 bg-black/20 text-[9px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-500 font-medium overflow-x-auto hide-scrollbar shrink-0">
+                <button data-tab="tab-geral" class="px-4 sm:px-6 py-4 tab-btn tab-active whitespace-nowrap">Info Geral</button>
+                <button data-tab="tab-precos" class="px-4 sm:px-6 py-4 tab-btn whitespace-nowrap">Preços</button>
+                <button data-tab="tab-imagens" id="btn-tab-imagens" class="px-4 sm:px-6 py-4 tab-btn whitespace-nowrap hidden"><span class="text-brand-gold font-bold">Imagens</span></button>
+                <button data-tab="tab-variantes" id="btn-tab-variantes" class="px-4 sm:px-6 py-4 tab-btn whitespace-nowrap hidden"><span class="text-brand-gold font-bold">Estoque</span></button>
+            </div>
+
+            <div class="p-4 sm:p-8 overflow-y-auto flex-1">
+                <form id="form-produto">
+                    <input type="hidden" id="produto-id">
+                    
+                    <div id="tab-geral" class="tab-content space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Nome do Produto *</label>
+                                <input type="text" id="p-nome" required class="input-dark" placeholder="Ex: Vestido de Seda Longo">
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">SKU / Código</label>
+                                <input type="text" id="p-sku" class="input-dark" placeholder="Ex: VEST-001">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Descrição Detalhada</label>
+                            <textarea id="p-descricao" class="input-dark h-20 resize-none" placeholder="Detalhes sobre o material..."></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Categoria *</label>
+                                <div class="flex items-center gap-3">
+                                    <select id="p-categoria" required class="input-dark flex-1">
+                                        <option value="" disabled selected>Carregando categorias...</option>
+                                    </select>
+                                    <button type="button" id="btn-nova-categoria" class="w-10 h-10 bg-white/5 hover:bg-brand-gold hover:text-black text-white border border-gray-700 hover:border-brand-gold rounded-sm flex items-center justify-center transition-all shadow-lg" title="Nova Categoria">
+                                        <span class="material-icons text-sm pointer-events-none">add</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Filial Proprietária *</label>
+                                <select id="p-filial" required class="input-dark"><option value="">Carregando filiais...</option></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-precos" class="tab-content hidden space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Preço de Venda (R$)*</label>
+                                <input type="number" step="0.01" id="p-preco" required class="input-dark" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Desconto em R$</label>
+                                <input type="number" step="0.01" id="p-desc-valor" class="input-dark" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Desconto em %</label>
+                                <input type="number" id="p-desc-perc" class="input-dark" placeholder="0 a 100">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 pt-4">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="p-parcelavel" class="w-4 h-4 rounded border-gray-700 bg-transparent accent-white">
+                                <label class="text-[10px] uppercase text-gray-400">Aceita Parcelamento</label>
+                            </div>
+                            <div id="box-parcelas" class="hidden">
+                                <label class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 block">Máx. de Parcelas</label>
+                                <input type="number" id="p-parcelas-max" class="input-dark" placeholder="Ex: 6">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-imagens" class="tab-content hidden space-y-6">
+                        <div class="border-2 border-dashed border-gray-700 bg-black/20 rounded-lg p-6 sm:p-10 text-center hover:border-brand-gold transition-colors relative">
+                            <input type="file" id="input-imagens" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div class="pointer-events-none flex flex-col items-center justify-center">
+                                <span class="material-icons text-4xl text-gray-500 mb-3">cloud_upload</span>
+                                <p class="text-sm font-medium text-white mb-1">Tire a Foto ou Arraste</p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">JPG, PNG, WebP</p>
+                            </div>
+                        </div>
+                        <div id="galeria-imagens" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            </div>
+                    </div>
+
+                    <div id="tab-variantes" class="tab-content hidden space-y-6">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center bg-white/5 p-4 border border-white/5 gap-4">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest leading-relaxed">Combine Tamanho e Cor para criar o estoque.</p>
+                            <button type="button" id="btn-nova-variante" class="text-[10px] bg-white text-black px-4 py-3 sm:py-2 font-bold uppercase hover:bg-gray-200">Adicionar Tamanho/Cor</button>
+                        </div>
+                        <div class="border border-gray-800 overflow-x-auto">
+                            <table class="w-full text-left text-xs min-w-[500px]">
+                                <thead class="bg-gray-900/50 uppercase text-[9px] text-gray-500">
+                                    <tr><th class="p-3">Tamanho</th><th class="p-3">Cor</th><th class="p-3">Estoque</th><th class="p-3">Mínimo</th><th class="p-3 text-right">Ações</th></tr>
+                                </thead>
+                                <tbody id="tabela-variantes" class="divide-y divide-gray-800">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-4 sm:p-6 border-t border-gray-800 flex justify-end gap-3 sm:gap-4 shrink-0 bg-brand-black/50">
+                <button id="btn-cancelar" class="text-[10px] sm:text-xs uppercase tracking-widest text-gray-500 hover:text-white px-4">Cancelar</button>
+                <button type="submit" form="form-produto" id="btn-salvar-produto" class="bg-white text-black px-6 sm:px-10 py-3 text-[10px] sm:text-xs uppercase font-bold tracking-widest hover:bg-gray-200 transition-all flex items-center gap-2">
+                    <span class="material-icons text-sm" id="icon-salvar-p">save</span> Salvar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-categoria" class="fixed inset-0 bg-black/95 z-[120] hidden items-center justify-center p-4 transition-all opacity-0">
+        <div class="bg-brand-gray border border-gray-700 w-full max-w-sm p-6 sm:p-8 rounded-sm shadow-2xl">
+            <h3 class="text-lg font-light mb-6 tracking-widest uppercase">Nova Categoria</h3>
+            <form id="form-categoria" class="space-y-6">
+                <div>
+                    <label class="text-[9px] uppercase text-gray-500 mb-1 block">Nome da Categoria *</label>
+                    <input type="text" id="cat-nome" required class="input-dark" placeholder="Ex: Saias, Conjuntos...">
+                </div>
+                <div class="flex justify-end gap-4 pt-4 border-t border-gray-800 mt-4">
+                    <button type="button" id="btn-fechar-cat" class="text-xs uppercase text-gray-500 hover:text-white transition-colors">Voltar</button>
+                    <button type="submit" id="btn-salvar-cat" class="bg-brand-gold text-black px-6 py-3 text-xs uppercase font-bold hover:bg-yellow-500 transition-colors">Criar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <datalist id="lista-tamanhos">
+        <option value="Único"><option value="PP"><option value="P"><option value="M"><option value="G"><option value="GG"><option value="36"><option value="38"><option value="40"><option value="42"><option value="44">
+    </datalist>
+    <datalist id="lista-cores">
+        <option value="Preto"><option value="Branco"><option value="Off-White"><option value="Bege"><option value="Azul Marinho"><option value="Vermelho"><option value="Vinho"><option value="Verde Militar">
+    </datalist>
+
+    <div id="modal-v" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-4 transition-all opacity-0">
+        <div class="bg-brand-gray border border-gray-700 w-full max-w-md p-6 sm:p-8 rounded-sm shadow-2xl">
+            <h3 id="modal-v-titulo" class="text-lg font-light mb-6 tracking-widest uppercase">Nova Variante</h3>
+            <form id="form-variante" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[9px] uppercase text-gray-500 mb-1 block">Tamanho *</label>
+                        <input type="text" id="v-tamanho" list="lista-tamanhos" required class="input-dark" placeholder="Ex: M, 40">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase text-gray-500 mb-1 block">Cor *</label>
+                        <input type="text" id="v-cor" list="lista-cores" required class="input-dark" placeholder="Ex: Preto">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-[9px] uppercase text-gray-500 mb-1 block">Estoque Inicial</label>
+                        <input type="number" id="v-estoque" class="input-dark" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="text-[9px] uppercase text-brand-gold mb-1 block">Alerta de Estoque Mínimo</label>
+                        <input type="number" id="v-min" class="input-dark" placeholder="Mínimo">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 pt-4 border-t border-gray-800 mt-4">
+                    <button type="button" id="btn-fechar-v" class="text-xs uppercase text-gray-500">Voltar</button>
+                    <button type="submit" class="bg-brand-gold text-black px-6 py-3 text-xs uppercase font-bold">Salvar Variante</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded-sm shadow-2xl transform translate-y-20 opacity-0 transition-all z-[200] text-sm flex items-center gap-3">
+        <span class="material-icons text-green-600" id="toast-icon">check_circle</span>
+        <span id="toast-msg"></span>
+    </div>
+</body>
+</html>

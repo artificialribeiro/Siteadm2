@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Boutique Diniz - Vender Gift Card</title>
+    
+    <link rel="icon" href="logo.png" type="image/png">
+    
+    <!-- Fontes da Marca -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['"Montserrat"', 'sans-serif'],
+                        script: ['"Great Vibes"', 'cursive'] 
+                    },
+                    colors: {
+                        brand: {
+                            black: '#050505', // Preto profundo
+                            dark: '#121212',  // Cinza muito escuro
+                            gray: '#1E1E1E',
+                            border: '#333333'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: white; }
+        
+        /* Inputs Dark Premium */
+        .input-premium { 
+            background: #121212; 
+            border: 1px solid #333; 
+            border-radius: 4px;
+            color: white; 
+            padding: 14px; 
+            font-size: 16px; 
+            width: 100%; 
+            outline: none; 
+            transition: all 0.3s; 
+        }
+        .input-premium:focus { 
+            border-color: #fff; 
+            box-shadow: 0 0 15px rgba(255,255,255,0.05); 
+        }
+
+        /* Efeito de Vidro no Cartão */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Impressão */
+        @media print { 
+            body * { visibility: hidden; } 
+            #area-impressao, #area-impressao * { visibility: visible; } 
+            #area-impressao { 
+                position: absolute; left: 0; top: 0; width: 80mm; 
+                background: white; color: black; padding: 0; margin: 0;
+            } 
+            .no-print { display: none !important; }
+        }
+    </style>
+
+    <script src="token.js?v=dark"></script>
+    <script src="menu.js?v=dark" defer></script>
+    <script src="cartao-presente.js?v=dark" defer></script>
+</head>
+<body class="h-screen w-full flex overflow-hidden bg-brand-black">
+
+    <!-- Menu Lateral será injetado aqui -->
+
+    <!-- Conteúdo Principal -->
+    <div class="flex-1 flex flex-col h-full relative overflow-hidden min-w-0">
+        
+        <!-- Header Minimalista -->
+        <header class="h-16 bg-brand-dark border-b border-brand-border flex items-center justify-between px-6 shrink-0 z-20">
+            <div class="flex items-center gap-4">
+                <button id="btn-open-menu" class="md:hidden text-white"><span class="material-icons">menu</span></button>
+                <div>
+                    <h1 class="font-sans font-bold text-sm uppercase tracking-[0.2em] text-white">Venda de Gift Card</h1>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-0.5" id="header-filial">Carregando...</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div id="box-cliente-topo" class="hidden items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+                    <span class="material-icons text-xs text-gray-400">person</span>
+                    <span id="topo-nome-cliente" class="text-xs font-bold text-white uppercase max-w-[100px] truncate">Cliente</span>
+                    <button id="btn-remover-cliente-topo" class="ml-1 text-gray-500 hover:text-red-500"><span class="material-icons text-[14px]">close</span></button>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs font-bold text-white uppercase tracking-widest" id="header-user">Operador</p>
+                    <p class="text-[9px] text-green-500 flex items-center justify-end gap-1 font-mono"><span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> ONLINE</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col lg:flex-row h-full overflow-hidden">
+            
+            <!-- Painel de Configuração (Esquerda) -->
+            <div class="w-full lg:w-[400px] xl:w-[450px] p-6 flex flex-col gap-8 overflow-y-auto bg-brand-black border-r border-brand-border z-10">
+                
+                <!-- Valor -->
+                <div class="space-y-4">
+                    <label class="block text-[10px] font-bold uppercase text-gray-500 tracking-[0.15em]">Definir Valor da Carga</label>
+                    
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-light text-xl transition-colors group-focus-within:text-white">R$</span>
+                        <input type="number" id="input-valor" class="input-premium pl-12 text-3xl font-light text-white placeholder-gray-700" placeholder="0.00" step="10.00">
+                    </div>
+
+                    <!-- Botões Rápidos -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="btn-valor py-3 bg-brand-dark border border-brand-border text-gray-400 hover:text-white hover:border-white transition-all text-xs font-bold uppercase tracking-widest" data-valor="50">R$ 50</button>
+                        <button class="btn-valor py-3 bg-brand-dark border border-brand-border text-gray-400 hover:text-white hover:border-white transition-all text-xs font-bold uppercase tracking-widest" data-valor="100">R$ 100</button>
+                        <button class="btn-valor py-3 bg-brand-dark border border-brand-border text-gray-400 hover:text-white hover:border-white transition-all text-xs font-bold uppercase tracking-widest" data-valor="200">R$ 200</button>
+                    </div>
+                </div>
+
+                <div class="h-px bg-brand-border w-full"></div>
+
+                <!-- Cliente (Opcional) -->
+                <div class="space-y-4">
+                    <label class="block text-[10px] font-bold uppercase text-gray-500 tracking-[0.15em]">Vincular Cliente (Opcional)</label>
+                    
+                    <div id="area-sem-cliente" class="p-6 border border-dashed border-gray-700 rounded-sm text-center hover:bg-white/5 hover:border-white/30 transition-all cursor-pointer group" onclick="document.getElementById('modal-cliente').classList.remove('hidden'); document.getElementById('modal-cliente').classList.add('flex');">
+                        <span class="material-icons text-gray-600 group-hover:text-white text-3xl mb-2 transition-colors">person_search</span>
+                        <p class="text-xs font-bold text-gray-400 group-hover:text-white uppercase tracking-widest">Identificar Comprador</p>
+                    </div>
+
+                    <div id="area-com-cliente" class="hidden bg-brand-dark border border-brand-border p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-bold text-white uppercase tracking-wide" id="display-nome-cliente">Nome</p>
+                            <p class="text-[10px] text-gray-500 font-mono mt-1" id="display-cpf-cliente">000.000.000-00</p>
+                        </div>
+                        <span class="material-icons text-green-500">verified</span>
+                    </div>
+                </div>
+
+                <!-- Botão Checkout -->
+                <div class="mt-auto pt-6">
+                    <button id="btn-checkout" disabled class="w-full py-5 bg-white text-black font-bold uppercase tracking-[0.2em] text-sm hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3">
+                        <span>Ir para Pagamento</span>
+                        <span class="material-icons text-sm">arrow_forward</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Área Visual (Direita) -->
+            <div class="flex-1 bg-gradient-to-br from-[#0a0a0a] to-[#000000] flex flex-col items-center justify-center p-8 relative overflow-hidden">
+                
+                <!-- Logo de Fundo (Marca d'água) -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+                    <span class="font-script text-[20vw] text-white select-none">Boutique</span>
+                </div>
+
+                <!-- Preview do Cartão -->
+                <div class="glass-card w-full max-w-[500px] aspect-[1.58/1] rounded-lg p-10 flex flex-col justify-between relative overflow-hidden transition-transform duration-700 hover:scale-[1.02]">
+                    
+                    <!-- Cabeçalho do Cartão -->
+                    <div class="flex justify-between items-start z-10">
+                        <div>
+                            <h2 class="font-script text-4xl text-white leading-none">Boutique Diniz</h2>
+                            <p class="text-[8px] uppercase tracking-[0.4em] text-gray-400 mt-1 ml-1">Moda Feminina</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-[8px] uppercase tracking-widest text-white/50 border border-white/20 px-2 py-1">Gift Card</span>
+                        </div>
+                    </div>
+
+                    <!-- Valor Central -->
+                    <div class="text-center z-10 py-4">
+                        <p class="text-6xl font-light tracking-tighter text-white drop-shadow-2xl" id="display-valor">R$ 0,00</p>
+                    </div>
+
+                    <!-- Rodapé do Cartão -->
+                    <div class="flex justify-between items-end z-10">
+                        <div>
+                            <p class="text-[7px] uppercase tracking-widest text-white/40 mb-1">Código de Resgate</p>
+                            <p class="font-mono text-sm text-white tracking-[0.2em] shadow-black drop-shadow-md">**** **** **** ****</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[7px] uppercase tracking-widest text-white/40 mb-1">Válido Até</p>
+                            <p class="font-mono text-xs text-white" id="display-validade">--/--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center text-[10px] text-gray-600 mt-8 uppercase tracking-widest opacity-50">Visualização do Cartão Virtual</p>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAIS (Estilo Dark) -->
+
+    <!-- 1. Identificar Cliente -->
+    <div id="modal-cliente" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4 fade-in">
+        <div class="bg-brand-dark border border-brand-border w-full max-w-sm p-8 shadow-2xl">
+            <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-6 border-b border-brand-border pb-4">Dados do Cliente</h3>
+            <form id="form-cliente" class="space-y-5">
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-widest mb-1 block">CPF (Números)</label>
+                    <input type="text" id="cli-cpf" class="input-premium font-mono" placeholder="000.000.000-00" required>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-widest mb-1 block">Nome Completo</label>
+                    <input type="text" id="cli-nome" class="input-premium" placeholder="Nome do Cliente" required>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="document.getElementById('modal-cliente').classList.remove('flex'); document.getElementById('modal-cliente').classList.add('hidden');" class="flex-1 py-3 text-xs text-gray-500 hover:text-white uppercase tracking-widest transition-colors">Cancelar</button>
+                    <button type="submit" class="flex-1 py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Pagamento -->
+    <div id="modal-pagamento" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-brand-dark border border-brand-border w-full max-w-sm p-8 shadow-2xl text-center">
+            <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-8">Forma de Pagamento</h3>
+            
+            <div class="space-y-3">
+                <button class="w-full py-4 px-6 bg-brand-gray hover:bg-white hover:text-black border border-brand-border transition-all flex items-center justify-between group btn-pay-method" data-method="pix">
+                    <span class="text-xs font-bold uppercase tracking-widest">PIX</span>
+                    <span class="material-icons text-gray-500 group-hover:text-black">pix</span>
+                </button>
+                <button class="w-full py-4 px-6 bg-brand-gray hover:bg-white hover:text-black border border-brand-border transition-all flex items-center justify-between group btn-pay-method" data-method="card">
+                    <span class="text-xs font-bold uppercase tracking-widest">Cartão (Maquininha)</span>
+                    <span class="material-icons text-gray-500 group-hover:text-black">credit_card</span>
+                </button>
+                <button class="w-full py-4 px-6 bg-brand-gray hover:bg-white hover:text-black border border-brand-border transition-all flex items-center justify-between group btn-pay-method" data-method="cash">
+                    <span class="text-xs font-bold uppercase tracking-widest">Dinheiro</span>
+                    <span class="material-icons text-gray-500 group-hover:text-black">payments</span>
+                </button>
+            </div>
+
+            <button onclick="document.getElementById('modal-pagamento').classList.add('hidden'); document.getElementById('modal-pagamento').classList.remove('flex');" class="mt-8 text-xs text-gray-600 hover:text-white uppercase tracking-widest">Cancelar Venda</button>
+        </div>
+    </div>
+
+    <!-- 3. Tipo PIX -->
+    <div id="modal-pix-tipo" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-brand-dark border border-brand-border w-full max-w-md p-8 shadow-2xl text-center">
+            <span class="material-icons text-4xl text-white mb-4">pix</span>
+            <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-2">Processar PIX</h3>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-8">Escolha como o cliente irá pagar</p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button id="btn-pix-auto" class="p-6 bg-brand-gray hover:bg-white hover:text-black border border-brand-border transition-all group flex flex-col items-center gap-3">
+                    <span class="material-icons text-gray-400 group-hover:text-black">qr_code_2</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest">Automático (Asaas)</span>
+                </button>
+                <button id="btn-pix-manual" class="p-6 bg-brand-gray hover:bg-white hover:text-black border border-brand-border transition-all group flex flex-col items-center gap-3">
+                    <span class="material-icons text-gray-400 group-hover:text-black">smartphone</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest">Manual (Externo)</span>
+                </button>
+            </div>
+            
+            <button onclick="document.getElementById('modal-pix-tipo').classList.add('hidden'); document.getElementById('modal-pix-tipo').classList.remove('flex');" class="mt-8 text-xs text-gray-600 hover:text-white uppercase tracking-widest">Voltar</button>
+        </div>
+    </div>
+
+    <!-- 4. QR Code -->
+    <div id="modal-qrcode" class="fixed inset-0 bg-black/95 z-50 hidden items-center justify-center p-4">
+        <div class="bg-brand-dark border border-brand-border w-full max-w-sm p-8 shadow-2xl text-center">
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Total a Pagar</p>
+            <p class="text-3xl font-light text-white mb-8" id="qr-valor">R$ 0,00</p>
+            
+            <div id="qr-loading" class="py-12">
+                <span class="material-icons animate-spin text-3xl text-gray-500">autorenew</span>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest mt-4">Gerando Cobrança...</p>
+            </div>
+
+            <div id="qr-content" class="hidden flex-col items-center w-full">
+                <div class="bg-white p-3 mb-6">
+                    <img id="qr-image" class="w-40 h-40 object-contain">
+                </div>
+                
+                <div class="flex items-center bg-black border border-gray-800 w-full mb-4">
+                    <input type="text" id="qr-code-text" readonly class="bg-transparent flex-1 text-[9px] p-3 text-gray-400 font-mono outline-none">
+                    <button id="btn-copy" class="px-4 bg-gray-900 text-white hover:bg-gray-800 border-l border-gray-800"><span class="material-icons text-sm">content_copy</span></button>
+                </div>
+
+                <div class="flex items-center gap-2 text-green-500 animate-pulse">
+                    <span class="material-icons text-sm">wifi_tethering</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Aguardando Banco...</span>
+                </div>
+            </div>
+
+            <button id="btn-cancel-qr" class="mt-8 text-xs text-red-500 hover:text-red-400 font-bold uppercase tracking-widest">Cancelar Operação</button>
+        </div>
+    </div>
+
+    <!-- 5. Recibo (Impressão) -->
+    <div id="modal-sucesso" class="fixed inset-0 bg-white z-[100] hidden flex-col items-center justify-center p-4">
+        <div id="area-impressao" class="bg-white text-black p-4 w-[80mm] text-center font-mono text-xs leading-tight">
+            
+            <div class="mb-4 pb-2 border-b border-black border-dashed">
+                <h2 class="font-bold text-xl font-script mb-1">Boutique Diniz</h2>
+                <p class="text-[10px] uppercase tracking-widest">Moda Feminina</p>
+            </div>
+
+            <div class="text-left mb-4 text-[10px] space-y-1">
+                <p>DATA: <span id="print-data"></span></p>
+                <p>CLIENTE: <span id="print-cliente" class="font-bold"></span></p>
+                <p>VENDEDOR: <span id="print-vendedor"></span></p>
+            </div>
+
+            <div class="border border-black p-4 mb-4 relative">
+                <p class="font-bold uppercase text-[10px] mb-2 text-center tracking-widest">Vale Presente</p>
+                <p class="text-xl font-bold tracking-[0.15em] mb-2 text-center" id="print-code">****</p>
+                <div class="flex justify-between text-[10px] border-t border-black pt-2 mt-2">
+                    <span>PIN: <b id="print-pin">****</b></span>
+                    <span>VALOR: <b id="print-valor" class="text-sm">R$ 0,00</b></span>
+                </div>
+            </div>
+
+            <div class="text-center text-[9px] mb-6">
+                <p>Válido até: <span id="print-validade"></span></p>
+                <p class="mt-2 opacity-70">Apresente este comprovante<br>no momento do resgate.</p>
+            </div>
+
+            <div class="border-t border-black border-dashed pt-4 font-bold text-[10px]">
+                OBRIGADO PELA PREFERÊNCIA!
+            </div>
+        </div>
+
+        <div class="mt-8 flex gap-4 no-print">
+            <button onclick="window.location.reload()" class="px-8 py-4 border border-gray-300 rounded text-black text-xs font-bold uppercase tracking-widest hover:bg-gray-100">Novo Cartão</button>
+            <button onclick="window.print()" class="px-8 py-4 bg-black text-white rounded text-xs font-bold uppercase tracking-widest hover:bg-gray-900 shadow-xl flex items-center gap-2"><span class="material-icons text-sm">print</span> Imprimir</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-white text-black px-6 py-4 rounded shadow-2xl transform translate-y-20 opacity-0 transition-all z-[200] flex items-center gap-3">
+        <span class="material-icons text-green-600">check_circle</span>
+        <span id="toast-msg" class="text-xs font-bold uppercase tracking-widest">Sucesso</span>
+    </div>
+
+</body>
+</html>
+
+
