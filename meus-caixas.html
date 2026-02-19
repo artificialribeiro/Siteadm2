@@ -33,22 +33,20 @@
         .input-dark { background: transparent; border: 0; border-bottom: 1px solid #333; color: white; transition: all 0.3s; padding: 10px 0; font-size: 13px; width: 100%; outline: none;}
         .input-dark:focus { border-bottom-color: #ffffff; }
         
-        /* 🟢 IMPRESSÃO A4 DEITADO (LANDSCAPE) PROFISSIONAL */
+        /* 🟢 IMPRESSÃO A4 LANDSCAPE */
         @media print {
-            @page { size: A4 landscape; margin: 10mm; }
-            body, html { background: white !important; color: black !important; margin: 0 !important; padding: 0 !important; height: auto !important; overflow: visible !important; }
-            body * { visibility: hidden; }
-            
-            /* Oculta UI geral */
-            main, header, nav, .glass-panel { display: none !important; }
-            
-            #modal-detalhes { position: absolute; left: 0; top: 0; width: 100%; display: block !important; border: none; box-shadow: none; background: transparent; }
-            #area-impressao-relatorio, #area-impressao-relatorio * { visibility: visible; }
-            #area-impressao-relatorio { 
-                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; 
-                font-family: 'Inter', sans-serif; font-size: 11px;
+            @page { size: A4 landscape; margin: 8mm; }
+            body * { visibility: hidden !important; }
+            #area-impressao-relatorio,
+            #area-impressao-relatorio * { visibility: visible !important; }
+            #area-impressao-relatorio {
+                position: fixed !important;
+                top: 0 !important; left: 0 !important;
+                width: 100% !important; height: auto !important;
+                background: #fff !important;
+                z-index: 99999 !important;
+                margin: 0 !important; padding: 0 !important;
             }
-            .no-print { display: none !important; }
         }
     </style>
     
@@ -194,27 +192,72 @@
                 <button id="btn-fechar-modal" class="text-gray-500 hover:text-white transition-colors"><span class="material-icons">close</span></button>
             </div>
             
-            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="bg-black/50 border border-gray-800 p-4 rounded-sm text-center">
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+                
+                <!-- Info do operador e datas -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div class="bg-white/5 border border-gray-800 p-3 rounded-sm">
+                        <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 flex items-center justify-center gap-1"><span class="material-icons text-[11px]">person</span> Operador</p>
+                        <p class="text-sm font-bold text-white truncate" id="detalhe-operador">—</p>
+                    </div>
+                    <div class="bg-white/5 border border-gray-800 p-3 rounded-sm">
+                        <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 flex items-center justify-center gap-1"><span class="material-icons text-[11px]">store</span> Filial</p>
+                        <p class="text-sm font-bold text-white truncate" id="detalhe-filial">—</p>
+                    </div>
+                    <div class="bg-white/5 border border-gray-800 p-3 rounded-sm">
+                        <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 flex items-center justify-center gap-1"><span class="material-icons text-[11px]">lock_open</span> Abertura</p>
+                        <p class="text-sm font-bold text-white" id="detalhe-abertura">—</p>
+                    </div>
+                    <div class="bg-white/5 border border-gray-800 p-3 rounded-sm">
+                        <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-1 flex items-center justify-center gap-1"><span class="material-icons text-[11px]">lock</span> Fechamento</p>
+                        <p class="text-sm font-bold text-white" id="detalhe-fechamento">—</p>
+                    </div>
+                </div>
+
+                <!-- Cards financeiros -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div class="bg-black/50 border border-gray-800 p-3 rounded-sm text-center">
                         <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-1">Fundo Inicial</p>
-                        <p class="text-lg font-bold text-white" id="detalhe-fundo">R$ 0,00</p>
+                        <p class="text-base font-bold text-white" id="detalhe-fundo">R$ 0,00</p>
                     </div>
-                    <div class="bg-green-950/20 border border-green-900/30 p-4 rounded-sm text-center">
-                        <p class="text-[9px] uppercase tracking-widest text-green-500 mb-1">Entradas Totais</p>
-                        <p class="text-lg font-bold text-green-400" id="detalhe-entradas">R$ 0,00</p>
+                    <div class="bg-green-950/20 border border-green-900/30 p-3 rounded-sm text-center">
+                        <p class="text-[9px] uppercase tracking-widest text-green-500 mb-1">Entradas</p>
+                        <p class="text-base font-bold text-green-400" id="detalhe-entradas">R$ 0,00</p>
                     </div>
-                    <div class="bg-red-950/20 border border-red-900/30 p-4 rounded-sm text-center">
-                        <p class="text-[9px] uppercase tracking-widest text-red-500 mb-1">Saídas Totais</p>
-                        <p class="text-lg font-bold text-red-400" id="detalhe-saidas">R$ 0,00</p>
+                    <div class="bg-red-950/20 border border-red-900/30 p-3 rounded-sm text-center">
+                        <p class="text-[9px] uppercase tracking-widest text-red-500 mb-1">Saídas</p>
+                        <p class="text-base font-bold text-red-400" id="detalhe-saidas">R$ 0,00</p>
                     </div>
-                    <div class="bg-white/10 border border-white/20 p-4 rounded-sm text-center relative overflow-hidden">
-                        <p class="text-[9px] uppercase tracking-widest text-white mb-1">Diferença (Quebra)</p>
-                        <p class="text-lg font-bold text-white" id="detalhe-quebra">R$ 0,00</p>
+                    <div class="bg-blue-950/20 border border-blue-900/30 p-3 rounded-sm text-center">
+                        <p class="text-[9px] uppercase tracking-widest text-blue-400 mb-1">Saldo Calculado</p>
+                        <p class="text-base font-bold text-blue-300" id="detalhe-saldo">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white/10 border border-white/20 p-3 rounded-sm text-center">
+                        <p class="text-[9px] uppercase tracking-widest text-white mb-1">Diferença</p>
+                        <p class="text-base font-bold text-white" id="detalhe-quebra">—</p>
                     </div>
                 </div>
                 
-                <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest">Para ver a lista completa de pagamentos e lançamentos separados por Cartão/PIX, clique em Imprimir Relatório.</p>
+                <!-- Lançamentos -->
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2 flex items-center gap-1"><span class="material-icons text-[12px]">list_alt</span> Lançamentos da Sessão</p>
+                    <div class="border border-gray-800 rounded-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-white/5 border-b border-gray-800">
+                                    <th class="p-3 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Data/Hora</th>
+                                    <th class="p-3 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Tipo</th>
+                                    <th class="p-3 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Descrição</th>
+                                    <th class="p-3 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Pagamento</th>
+                                    <th class="p-3 text-[9px] uppercase tracking-widest text-gray-500 font-bold">Origem</th>
+                                    <th class="p-3 text-[9px] uppercase tracking-widest text-gray-500 font-bold text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalhe-lancamentos-body"></tbody>
+                        </table>
+                        <p id="detalhe-sem-lancamentos" class="hidden p-6 text-center text-gray-500 text-[10px] uppercase tracking-widest">Nenhum lançamento nesta sessão.</p>
+                    </div>
+                </div>
             </div>
             
             <div class="p-4 sm:p-6 border-t border-gray-800 flex justify-between gap-3 shrink-0 bg-black/80">
@@ -228,8 +271,8 @@
             </div>
         </div>
 
-        <div id="area-impressao-relatorio" class="hidden print:block w-full h-full bg-white text-black p-4">
-            </div>
+        <div id="area-impressao-relatorio" style="display:none;" class="w-full bg-white text-black">
+        </div>
     </div>
 
     <div id="modal-motivo-reabertura" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[250] hidden items-center justify-center p-4 transition-all opacity-0">
