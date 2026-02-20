@@ -1,6 +1,6 @@
 // --- CONFIGURAÇÕES DA API ---
 // 🟢 URL atualizada para o servidor correto
-const API_URL = 'https://1535-ipb9m99bpoqaretezt9wa-88013534.us1.manus.computer;
+const API_URL = 'https://botiquedinizsistema.onrender.com;
 const API_KEY = '1526'; 
 
 // --- LÓGICA DE CRIAÇÃO DE USUÁRIO ---
