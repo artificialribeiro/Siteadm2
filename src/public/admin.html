@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boutique Diniz - Configuração de Segurança</title>
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --secondary-color: #c5a059;
+            --bg-color: #f4f4f4;
+            --text-color: #333;
+            --white: #ffffff;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .header .version {
+            color: var(--secondary-color);
+            font-size: 11px;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        #login-section, #admin-section {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: var(--danger);
+            margin-left: 2px;
+        }
+
+        label .hint {
+            font-weight: 400;
+            color: #999;
+            font-size: 12px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        input[type="password"], input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background-color: var(--secondary-color);
+            margin-top: 10px;
+        }
+
+        button.secondary:hover {
+            background-color: #b08d3e;
+        }
+
+        button.danger {
+            background-color: var(--danger);
+            padding: 6px 12px;
+            font-size: 12px;
+            width: auto;
+        }
+
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+
+        .url-list {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .url-list h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .url-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .url-info {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .url-info strong {
+            display: block;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .url-info span {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .message.error {
+            background-color: #fdecea;
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+            display: block;
+        }
+
+        .message.success {
+            background-color: #eafaf1;
+            color: #1e8449;
+            border-left: 4px solid var(--success);
+            display: block;
+        }
+
+        .message.warning {
+            background-color: #fef9e7;
+            color: #7d6608;
+            border-left: 4px solid var(--warning);
+            display: block;
+        }
+
+        .message.info {
+            background-color: #eaf2f8;
+            color: #1a5276;
+            border-left: 4px solid var(--info);
+            display: block;
+        }
+
+        .security-notice {
+            background-color: #fef9e7;
+            border: 1px solid #f9e79f;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #7d6608;
+            line-height: 1.5;
+        }
+
+        .security-notice strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: none;
+            color: #888;
+            border: none;
+            width: auto;
+            font-size: 12px;
+            text-decoration: underline;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .logout-btn:hover {
+            color: #555;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: '';
+            animation: dots 1.5s steps(3, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 25px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Boutique Diniz</h1>
+            <p>Painel de Segurança - URLs Autorizadas</p>
+            <div class="version">v4.0 - Atlas Soluções</div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- Seção de Login -->
+        <div id="login-section" style="display: block;">
+            <div class="form-group">
+                <label for="password">Senha de Acesso</label>
+                <input type="password" id="password" placeholder="Digite a senha de acesso" onkeydown="if(event.key==='Enter')login()">
+            </div>
+            <button onclick="login()">Acessar Painel</button>
+        </div>
+
+        <!-- Seção Administrativa -->
+        <div id="admin-section">
+
+            <div class="security-notice">
+                <strong>Segurança Ativa</strong>
+                Para adicionar ou remover URLs autorizadas, é necessário informar a <strong>Chave de Segurança</strong> do sistema.
+            </div>
+
+            <div class="form-group">
+                <label for="admin-key">
+                    Chave de Segurança <span class="required">*</span>
+                    <span class="hint">Obrigatória para adicionar ou remover URLs</span>
+                </label>
+                <input type="password" id="admin-key" placeholder="Digite a chave de segurança">
+            </div>
+
+            <hr class="divider">
+
+            <div class="form-group">
+                <label for="new-url">
+                    Nova URL Autorizada <span class="required">*</span>
+                </label>
+                <input type="url" id="new-url" placeholder="https://exemplo.com" onkeydown="if(event.key==='Enter')addUrl()">
+            </div>
+            <div class="form-group">
+                <label for="url-desc">Descrição (Opcional)</label>
+                <input type="text" id="url-desc" placeholder="Ex: Chamadas do Site Principal">
+            </div>
+            <button class="secondary" onclick="addUrl()" id="btn-add-url">Autorizar URL</button>
+
+            <div class="url-list" id="url-list">
+                <h3>URLs Autorizadas</h3>
+                <div id="urls-container" style="margin-top: 15px;">
+                    <p class="loading">Carregando</p>
+                </div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">Sair do Painel</button>
+
+            <div class="footer">
+                Boutique Diniz &mdash; Desenvolvido por Atlas Soluções
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAuthenticated = false;
+
+        // Detectar a base URL automaticamente (funciona dentro de iframe ou direto)
+        function getBaseUrl() {
+            // Usar a URL atual como base (funciona em qualquer hospedagem)
+            const loc = window.location;
+            return loc.protocol + '//' + loc.host;
+        }
+
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = 'message ' + type;
+            if (type === 'success') {
+                setTimeout(function() {
+                    msgDiv.className = 'message';
+                    msgDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function clearMessage() {
+            const msgDiv = document.getElementById('message');
+            msgDiv.className = 'message';
+            msgDiv.style.display = 'none';
+        }
+
+        function getAdminKey() {
+            return (document.getElementById('admin-key').value || '').trim();
+        }
+
+        async function login() {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                showMessage('Digite a senha de acesso.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(getBaseUrl() + '/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    isAuthenticated = true;
+                    sessionStorage.setItem('admin_auth', 'true');
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('admin-section').style.display = 'block';
+                    clearMessage();
+                    loadUrls();
+                } else {
+                    showMessage(data.message || 'Senha incorreta!', 'error');
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                showMessage('Erro ao conectar com o servidor. Verifique se a API está online.', 'error');
+            }
+        }
+
+        async function loadUrls() {
+            if (!isAuthenticated) return;
+
+            const container = document.getElementById('urls-container');
+            container.innerHTML = '<p class="loading">Carregando</p>';
+
+            try {
+                const response = await fetch(getBaseUrl() + '/api/admin/urls');
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.length > 0) {
+                    container.innerHTML = '';
+                    data.data.forEach(function(item) {
+                        const div = document.createElement('div');
+                        div.className = 'url-item';
+                        div.innerHTML =
+                            '<div class="url-info">' +
+                                '<strong>' + escapeHtml(item.url) + '</strong>' +
+                                '<span>' + escapeHtml(item.descricao || 'Sem descrição') +
+                                ' &mdash; Adicionada em: ' + formatDate(item.criado_em) + '</span>' +
+                            '</div>' +
+                            '<button class="danger" onclick="removeUrl(' + item.id + ')">Remover</button>';
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p class="empty-state">Nenhuma URL autorizada cadastrada.</p>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar URLs:', error);
+                container.innerHTML = '<p class="empty-state" style="color: #e74c3c;">Erro ao carregar URLs. Verifique a conexão.</p>';
+            }
+        }
+
+        async function addUrl() {
+            const url = (document.getElementById('new-url').value || '').trim();
+            const descricao = (document.getElementById('url-desc').value || '').trim();
+            const chave = getAdminKey();
+
+            if (!chave) {
+                showMessage('Informe a Chave de Segurança para autorizar esta operação.', 'warning');
+                document.getElementById('admin-key').focus();
+                return;
+            }
+
+            if (!url) {
+                showMessage('A URL é obrigatória.', 'error');
+                document.getElementById('new-url').focus();
+                return;
+            }
+
+            // Validar formato básico da URL
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showMessage('A URL deve começar com http:// ou https://', 'error');
+                document.getElementById('new-url').focus();
+                return;
+            }
+
+            var btn = document.getElementById('btn-add-url');
+            btn.disabled = true;
+            btn.textContent = 'AUTORIZANDO...';
+
+            try {
+                const response = await fetch(getBaseUrl() + '/api/admin/urls', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': chave
+                    },
+                    body: JSON.stringify({ url: url, descricao: descricao })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('URL autorizada com sucesso!', 'success');
+                    document.getElementById('new-url').value = '';
+                    document.getElementById('url-desc').value = '';
+                    loadUrls();
+                } else {
+                    showMessage(data.message || 'Erro ao adicionar URL.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar URL:', error);
+                showMessage('Erro ao conectar com o servidor.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'AUTORIZAR URL';
+            }
+        }
+
+        async function removeUrl(id) {
+            var chave = getAdminKey();
+
+            if (!chave) {
+                showMessage('Informe a Chave de Segurança para remover URLs.', 'warning');
+                document.getElementById('admin-key').focus();
+                return;
+            }
+
+            if (!confirm('Deseja realmente remover esta URL autorizada?')) return;
+
+            try {
+                const response = await fetch(getBaseUrl() + '/api/admin/urls/' + id + '?chave=' + encodeURIComponent(chave), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Admin-Key': chave
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('URL removida com sucesso!', 'success');
+                    loadUrls();
+                } else {
+                    showMessage(data.message || 'Erro ao remover URL.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao remover URL:', error);
+                showMessage('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function logout() {
+            isAuthenticated = false;
+            sessionStorage.removeItem('admin_auth');
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('password').value = '';
+            document.getElementById('admin-key').value = '';
+            clearMessage();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                var d = new Date(dateStr);
+                return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // Verificar se já estava logado nesta sessão
+        if (sessionStorage.getItem('admin_auth') === 'true') {
+            isAuthenticated = true;
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('admin-section').style.display = 'block';
+            loadUrls();
+        }
+    </script>
+</body>
+</html>
