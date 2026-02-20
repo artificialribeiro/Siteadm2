@@ -94,4 +94,4 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         btn.innerHTML = 'Registrar Administrador';
     }
 });
-url da api https://botique-apis.onrender.com
+
