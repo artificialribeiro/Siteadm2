@@ -1,6 +1,6 @@
 // --- CONFIGURAÇÕES DA API ---
 // 🟢 URL atualizada para o servidor correto
-const API_URL = 'https://botique-apis.onrender.com';
+const API_URL = 'https://apis-2-1iqu.onrender.com';
 const API_KEY = '1526'; 
 
 // --- LÓGICA DE CRIAÇÃO DE USUÁRIO ---
