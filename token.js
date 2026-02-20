@@ -13,7 +13,7 @@ class AuthManager {
 
   constructor() {
     // Credenciais da sua API
-    this.#apiUrl = 'https://1535-ipb9m99bpoqaretezt9wa-88013534.us1.manus.computer';
+    this.#apiUrl = 'https://botiquedinizsistema.onrender.com';
     this.#apiKey = '1526';
     
     this.#currentToken = null;
